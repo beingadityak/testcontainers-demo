@@ -13,7 +13,7 @@ on:
       - .github/workflows/docker-publish.yml
 
 env:
-  IMAGE_NAME: dns-parser-server
+  IMAGE_NAME: testcontainers-demo-server
 
 jobs:
   build-and-push:

@@ -9,12 +9,28 @@ spec:
       uri: 'https://github.com/beingadityak/testcontainers-demo'
       revision: main
   container:
-    workingDir: .
+    workingDir: /data/repo
     resources:
       requests:
         cpu: 100m
         memory: 100Mi
+  services:
+   dind:
+     logs: always
+     timeout: 5m
+     image: 'docker:27.4.0-dind'
+     env:
+       - name: DOCKER_TLS_CERTDIR
+     securityContext:
+       privileged: true
+     readinessProbe:
+       tcpSocket:
+         port: 2375
   steps:
     - name: run-tests
+      env:
+         - name: DOCKER_HOST
+           value: 'tcp://{{ services.dind.0.ip }}:2375'
       run:
         image: ghcr.io/beingadityak/dns-test-executor:latest
+        command: ["pytest", "-rP"]

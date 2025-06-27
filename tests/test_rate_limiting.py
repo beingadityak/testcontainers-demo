@@ -37,7 +37,7 @@ def wait_for_server(timeout=10):
 
 
 def test_rate_limit_exceeded():
-    with RedisContainer() as redis:
+    with RedisContainer(image="redis:7.2-alpine") as redis:
         redis_host = redis.get_container_host_ip()
         redis_port = redis.get_exposed_port(6379)
 

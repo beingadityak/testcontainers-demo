@@ -5,7 +5,7 @@ from dns_querier.main import create_app
 
 @pytest.fixture(scope="module", autouse=True)
 def flask_with_redis():
-    with RedisContainer() as redis:
+    with RedisContainer(image="redis:7.2-alpine") as redis:
         import os
         os.environ["REDIS_HOST"] = redis.get_container_host_ip()
         os.environ["REDIS_PORT"] = redis.get_exposed_port(6379)

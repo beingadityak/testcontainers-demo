@@ -10,4 +10,4 @@ RUN pip install poetry pytest testcontainers
 WORKDIR /app
 COPY . .
 
-CMD ["pytest", "tests/"]
+CMD ["pytest", "-rP"]

@@ -1,0 +1,20 @@
+apiVersion: testworkflows.testkube.io/v1
+kind: TestWorkflow
+metadata:
+  name: dns-parser-e2e
+  namespace: testkube
+spec:
+  content:
+    git:
+      uri: 'https://github.com/beingadityak/testcontainers-demo'
+      revision: main
+  container:
+    workingDir: .
+    resources:
+      requests:
+        cpu: 100m
+        memory: 100Mi
+  steps:
+    - name: run-tests
+      run:
+        image: ghcr.io/beingadityak/dns-test-executor:latest

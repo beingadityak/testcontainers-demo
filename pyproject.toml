@@ -9,7 +9,7 @@ readme = "README.md"
 python = "^3.12"
 flask = "^3.1.1"
 dnslib = "^0.9.26"
-requests = "^2.32.3"
+requests = "^2.32.4"
 click = "^8.2.1"
 gunicorn = "^23.0.0"
 

@@ -1,0 +1,10 @@
+bases:
+  - ../../base
+
+patchesStrategicMerge:
+  - replica-patch.yaml
+  - ingress-patch.yaml
+
+images:
+  - name: ghcr.io/beingadityak/clickhouse-assignment/dns-parser-server
+    newTag: v0.1.0

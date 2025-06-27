@@ -1,0 +1,9 @@
+resources:
+  - deployment.yaml
+  - service.yaml
+  - ingress.yaml
+
+images:
+  - name: dns-parser-server
+    newName: ghcr.io/beingadityak/clickhouse-assignment/dns-parser-server
+    newTag: latest

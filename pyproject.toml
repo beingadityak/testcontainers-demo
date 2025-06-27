@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "dns-querier"
+version = "0.0.1"
+description = "DNS Querier Flask application for querying DNS records and displaying them as JSON."
+authors = ["Aditya Krishnakumar <me@beinagdityak.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+flask = "^3.1.1"
+dnslib = "^0.9.26"
+requests = "^2.32.3"
+click = "^8.2.1"
+gunicorn = "^23.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

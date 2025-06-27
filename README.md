@@ -1,145 +1,105 @@
-# DNS Parser — Base64-Encoded DNS Query API
+# DNS Parser API
 
-This is a production-ready Python Flask application that provides an HTTP API endpoint to decode and parse base64-encoded DNS queries (RFC 1035). It includes:
+A Flask-based HTTP API that accepts base64-encoded DNS queries (RFC1035), decodes and parses them, logs request/response, and returns DNS questions and answers in JSON. It includes rate-limiting via Redis and DNS resolution fallback to local and public resolvers.
 
-- A `/dns/queries` POST endpoint that returns parsed DNS questions and request ID.
-- CLI tool to encode a domain as a DNS query and send to the server.
-- Dockerized with minimal Alpine-based images and Gunicorn for WSGI.
-- K8s manifests with health checks, CPU requests/limits, and Kustomize support.
+---
 
-## Features
+## 🚀 Features
 
-- Parses DNS queries (base64, RFC1035)
-- Returns request ID from DNS header
-- Logs structured output with timestamps
-- Flask server behind Gunicorn
-- CLI to test endpoint easily
-- Fully containerized, minimal image
-- Kubernetes-ready with ingress + probes
-- Easily override image tag & replicas via Kustomize
+- Accepts base64-encoded DNS queries via `POST /dns/queries`
+- Parses multiple DNS questions (RFC1035)
+- Returns JSON with ID, questions, and DNS answers
+- Performs DNS resolution with local and fallback resolvers
+- Implements IP-based rate limiting using Redis
+- Returns `429 Too Many Requests` with `Retry-After` header
+- Supports caching with `ETag` and `If-None-Match`
+- Exposes health check at `/healthz`
 
-## How It Works
+---
 
-### POST `/dns/queries`
-
-- Accepts a **base64-encoded DNS query** in the body.
-- Parses the query and returns:
-  ```json
-  {
-    "id": "query-id",
-    "questions": [
-      {
-        "name": "www.google.com.",
-        "type": "A"
-      }
-    ]
-  }
-  ```
-
-- Response has caching headers: `ETag`, `Cache-Control`
-
-## CLI Usage
-
-### Pre-requisites
-- Python 3.12+
-- `click` library for CLI (install via `pip install click`)
-
-### Run the CLI:
-
-```bash
-python client/cli.py www.google.com
-```
-
-### Example Output:
-
-```bash
-Status: 200
-Headers:
-  cache-control: public, max-age=3600
-  etag: 3140f8...
-
-Response:
-{
-  "id": "3140f8...",
-  "questions": [
-    {
-      "name": "www.google.com.",
-      "type": "A"
-    }
-  ]
-}
-```
-
-You can also point to a remote server:
-
-```bash
-python client/cli.py www.google.com --url http://your-host/dns/queries
-```
-
-## Build and Run with Docker
-
-### Build the image
-
-```bash
-docker build -t dns-parser-server -f Dockerfile.server .
-```
-
-### Run locally
-
-```bash
-docker run -p 5000:5000 dns-parser-server
-```
-
-## Deploy to Kubernetes
-
-### Requirements
-
-- Kubernetes cluster (minikube, EKS, GKE, etc.)
-- `kubectl` and `kustomize` installed
-- Ingress controller installed (e.g., nginx)
-
-### Apply the manifests
-
-```bash
-kubectl apply -k k8s/overlays/prod
-```
-
-### Customize image tag or replicas
-
-Edit `k8s/overlays/prod/kustomization.yaml`:
-
-```yaml
-images:
-  - name: your-dockerhub-username/dns-parser-server
-    newTag: v1.2.3
-
-patchesStrategicMerge:
-  - replica-patch.yaml
-  - ingress-host-patch.yaml
-```
-
-Then re-apply:
-
-```bash
-kubectl apply -k k8s/overlays/prod
-```
-
-## Project Structure
+## 🗂 Project Structure
 
 ```
 dns_parser/
-├── app/                  # Flask server logic
-├── client/               # CLI client
-├── tests/                # Unit tests
-├── k8s/                  # Kubernetes manifests
-│   ├── base/
-│   └── overlays/prod/
-├── Dockerfile.server     # Multi-stage, minimal server image
-├── pyproject.toml        # Poetry config
-├── run.py                # Entry point
-└── README.md             # You're here
+├── dns_querier/      # Flask app logic
+├── client/           # CLI tool to send DNS queries
+├── e2e/              # End-to-end tests using testcontainers
+├── tests/            # Unit tests
+├── Dockerfile.server # Multi-stage minimal server image
+├── docker-compose.yml
+├── pyproject.toml
+├── README.md
 ```
 
-## Healthcheck Endpoints
+---
 
-The Flask server includes `/healthz` for liveness and readiness probes.
+## 🧪 Test Suite with TestContainers
+
+This project uses [`testcontainers`](https://github.com/testcontainers/testcontainers-python) to run integration and e2e tests in isolated Docker-based environments.
+
+### ✅ Install dependencies:
+
+```bash
+poetry install
+```
+
+### ▶️ Run all tests:
+
+```bash
+poetry run pytest
+```
+
+This will automatically spin up a Redis container for rate-limiting tests.
+
+---
+
+## 🖥 Running the Server Locally
+
+### Using Poetry:
+
+```bash
+poetry run python run.py
+```
+
+### Or using Docker:
+
+```bash
+docker build -f Dockerfile.server -t dns-parser-server .
+docker run -p 5000:5000 dns-parser-server
+```
+
+Health check:
+
+```bash
+curl http://localhost:5000/healthz
+```
+
+---
+
+## 🧰 Using the CLI
+
+The project includes a simple CLI tool to send DNS queries:
+
+```bash
+poetry run python client/cli.py www.google.com
+```
+
+You can change the endpoint URL using:
+
+```bash
+poetry run python client/cli.py www.google.com --url http://localhost:5000/dns/queries
+```
+
+---
+
+## 📂 GitHub Actions
+
+- All tests are run via CI using `pytest`
+- Docker image builds are only triggered **if tests pass**
+- Separate workflows are used for test and image build stages
+
+---
+
+## 📝 License
+
+MIT

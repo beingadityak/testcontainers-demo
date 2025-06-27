@@ -1,7 +1,6 @@
 import base64
 import time
 import requests
-import socket
 from multiprocessing import Process
 from testcontainers.redis import RedisContainer
 from dns_querier.main import create_app

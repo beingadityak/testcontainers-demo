@@ -1,5 +1,4 @@
 import logging
-import time
 import os
 import redis
 from flask import Flask, request, jsonify, make_response

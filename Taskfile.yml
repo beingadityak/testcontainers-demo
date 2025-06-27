@@ -1,0 +1,65 @@
+version: '3'
+
+env:
+  TESTKUBE_NS: testkube
+  TEST_IMAGE: ghcr.io/beingadityak/dns-test-executor:latest
+  CLUSTER_NAME: testkube-cluster
+
+tasks:
+  setup:kind:
+    desc: Create a KinD cluster
+    cmds:
+      - kind create cluster --name {{.CLUSTER_NAME}} --config testkube/kind-config.yaml
+
+  setup:helm:
+    desc: Install Helm and Testkube in the cluster
+    cmds:
+      - helm repo add testkube https://kubeshop.github.io/helm-charts
+      - helm repo update
+      - kubectl create namespace {{.TESTKUBE_NS}} || true
+      - helm install testkube testkube/testkube --debug --namespace {{.TESTKUBE_NS}} --wait --set dashboard.enabled=false
+
+  install:cli:
+    desc: Install the Testkube CLI
+    cmds:
+      - curl -sSLf https://get.testkube.io | bash
+
+  build:test-image:
+    desc: Build local test image for TestContainers tests
+    cmds:
+      - docker build -t {{.TEST_IMAGE}} -f testkube/Dockerfile.testkube .
+
+  load:image:
+    desc: Load local image into KinD
+    cmds:
+      - kind load docker-image {{.TEST_IMAGE}} --name {{.CLUSTER_NAME}}
+
+  create:test:
+    desc: Apply Testkube Test CR from YAML manifest
+    cmds:
+      - kubectl apply -f testkube/testkube-test.yaml
+
+  run:test:
+    desc: Run the test in Testkube
+    cmds:
+      - tk run test python-dns-tests --watch --namespace {{.TESTKUBE_NS}}
+
+  clean:
+    desc: Clean KinD cluster
+    cmds:
+      - kind delete cluster --name {{.CLUSTER_NAME}}
+
+  setup:
+    desc: Install dependencies
+    cmds:
+      - task: install:cli
+  
+  tests:
+    desc: Run the full tests
+    cmds:
+      - task: setup:kind
+      - task: setup:helm
+      - task: build:test-image
+      - task: load:image
+      - task: create:test
+      - task: run:test

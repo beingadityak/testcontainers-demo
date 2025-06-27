@@ -1,0 +1,18 @@
+apiVersion: tests.testkube.io/v3
+kind: Test
+metadata:
+  name: python-dns-tests
+  namespace: testkube
+spec:
+  type: executor/testcontainers
+  content:
+    type: git
+    repository:
+      uri: https://github.com/beingadityak/testcontainers-demo
+      branch: main
+      path: .
+  executionRequest:
+    image: ghcr.io/beingadityak/dns-test-executor:latest
+    command: [ "pytest" ]
+    args:
+      - tests/

@@ -1,0 +1,48 @@
+name: Run DNS Parser TestContainers Tests on KinD
+
+on:
+  workflow_run:
+    workflows: ["Build Python Test Image"]
+    types:
+      - completed
+
+jobs:
+  run-testcontainers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up KinD
+        uses: helm/kind-action@v1.8.0
+        with:
+          cluster_name: testkube-cluster
+          config: testkube/kind-config.yaml
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+
+      - name: Create namespace
+        run: kubectl create namespace testkube
+
+      - name: Install Testkube
+        run: |
+          helm repo add testkube https://kubeshop.github.io/helm-charts
+          helm repo update
+          helm install testkube testkube/testkube --namespace testkube --set dashboard.enabled=false
+
+      - name: Wait for pods
+        run: kubectl wait --namespace testkube --for=condition=Ready pods --all --timeout=120s
+
+      - name: Install Testkube CLI
+        run: curl -sSLf https://get.testkube.io | bash
+
+      - name: Connect to Testkube
+        run: tk connect --namespace testkube --no-port-forward
+        
+      - name: Apply Testkube test manifest
+        run: |
+          kubectl apply -f testkube/testkube-test.yaml
+
+      - name: Run the Test
+        run: |
+          tk run test python-dns-tests --watch --namespace testkube

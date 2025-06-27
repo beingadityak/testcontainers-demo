@@ -1,22 +1,17 @@
 name: Build and Push Docker Image to GHCR
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - Dockerfile
-      - dns_querier/**
-      - run.py
-      - pyproject.toml
-      - poetry.lock
-      - .github/workflows/docker-publish.yml
+  workflow_run:
+    workflows: ["Run Tests"]
+    types:
+      - completed
 
 env:
   IMAGE_NAME: testcontainers-demo-server
 
 jobs:
   build-and-push:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read

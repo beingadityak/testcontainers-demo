@@ -6,5 +6,5 @@ patchesStrategicMerge:
   - ingress-patch.yaml
 
 images:
-  - name: ghcr.io/beingadityak/clickhouse-assignment/dns-parser-server
+  - name: ghcr.io/beingadityak/testcontainers-demo-server
     newTag: v0.1.0

@@ -5,5 +5,5 @@ resources:
 
 images:
   - name: dns-parser-server
-    newName: ghcr.io/beingadityak/clickhouse-assignment/dns-parser-server
+    newName: ghcr.io/beingadityak/testcontainers-demo-server
     newTag: latest

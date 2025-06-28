@@ -9,15 +9,12 @@ tasks:
   setup:kind:
     desc: Create a KinD cluster
     cmds:
-      - kind create cluster --name {{.CLUSTER_NAME}} --config testkube/kind-config.yaml
+      - kind create cluster --name {{.CLUSTER_NAME}} --config kind-config.yaml
 
   setup:helm:
     desc: Install Helm and Testkube in the cluster
     cmds:
-      - helm repo add testkube https://kubeshop.github.io/helm-charts
-      - helm repo update
-      - kubectl create namespace {{.TESTKUBE_NS}} || true
-      - helm install testkube testkube/testkube --debug --namespace {{.TESTKUBE_NS}} --wait --set dashboard.enabled=false
+      - helm repo add kubeshop https://kubeshop.github.io/helm-charts ; helm repo update && helm upgrade --install --create-namespace {{.TESTKUBE_NS}} kubeshop/testkube --set testkube-api.cloud.key=TESTKEY --set testkube-api.cloud.orgId=TESTORG --set testkube-api.cloud.envId=TESTID --set testkube-api.minio.enabled=false --set mongodb.enabled=false --set testkube-dashboard.enabled=false --set testkube-api.cloud.url=agent.testkube.io:443 --namespace testkube
 
   install:cli:
     desc: Install the Testkube CLI
@@ -27,7 +24,7 @@ tasks:
   build:test-image:
     desc: Build local test image for TestContainers tests
     cmds:
-      - docker build -t {{.TEST_IMAGE}} -f testkube/Dockerfile.testkube .
+      - docker build -t {{.TEST_IMAGE}} -f Dockerfile.testkube .
 
   load:image:
     desc: Load local image into KinD
@@ -37,12 +34,12 @@ tasks:
   create:test:
     desc: Apply Testkube Test CR from YAML manifest
     cmds:
-      - kubectl apply -f testkube/testkube-test.yaml
+      - kubectl apply -f testkube-workflow.yaml
 
   run:test:
     desc: Run the test in Testkube
     cmds:
-      - tk run test python-dns-tests --watch --namespace {{.TESTKUBE_NS}}
+      - tk run testworkflow dns-parser-e2e --watch --namespace {{.TESTKUBE_NS}}
 
   clean:
     desc: Clean KinD cluster
